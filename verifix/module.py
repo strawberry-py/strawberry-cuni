@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import discord
 from discord.ext import commands
 
 from pie import logger
@@ -29,18 +28,15 @@ class Verifix(commands.Cog, MappingExtension):
 
     def __init__(self, bot: commands.Bot):
         self.bot = bot
-        if IMPORT_EX:
-            bot_log.error(None, None, "Error during mgmt.verify database import:", exception=IMPORT_EX)
-            return
-        MappingExtension.register_extension(name=self.name, ext=self)
-        bot_log.info(None, None, f"Registered {self.name} as CustomMapping handler.")
 
-    def cog_unload(self):
+    async def cog_unload(self):
         if IMPORT_EX:
             return
 
         MappingExtension.unregister_extension(name=self.name)
-        bot_log.info(None, None, f"Unregistered {self.name} as CustomMapping handler.")
+        await bot_log.info(
+            None, None, f"Unregistered {self.name} as CustomMapping handler."
+        )
 
     async def _get_or_create_rule(self, guild_id: int, name: str) -> VerifyRule:
         rule = VerifyRule.get(guild_id=guild_id, name=name)
@@ -52,13 +48,28 @@ class Verifix(commands.Cog, MappingExtension):
 
         return VerifyRule.add(guild_id=guild_id, name="cuni")
 
-    async def map(self, guild_id: int, username: str = None, domain: str = None, email: str = None) -> CustomMapping | None:
+    async def map(
+        self, guild_id: int, username: str = None, domain: str = None, email: str = None
+    ) -> CustomMapping | None:
         if domain.lower().endswith(".cuni.cz") or email.lower().endswith(".cuni.cz"):
-            rule: VerifyRule = await self._get_or_create_rule(guild_id=guild_id, name="cuni")
+            rule: VerifyRule = await self._get_or_create_rule(
+                guild_id=guild_id, name="cuni"
+            )
             return rule
 
         return None
 
 
 async def setup(bot) -> None:
-    await bot.add_cog(Verifix(bot))
+    if IMPORT_EX:
+        await bot_log.error(
+            None, None, "Error during mgmt.verify database import:", exception=IMPORT_EX
+        )
+        return
+
+    cog = Verifix(bot)
+    await bot.add_cog(cog)
+
+    MappingExtension.register_extension(name=cog.name, ext=cog)
+
+    await bot_log.info(None, None, f"Registered {cog.name} as CustomMapping handler.")
