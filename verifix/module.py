@@ -16,6 +16,15 @@ except Exception as ex:
 
 
 class Verifix(commands.Cog, MappingExtension):
+    """This module works as extension for mgmt.verify module.
+
+    If strawberry-py management repo is not installed, this module won't do anything.
+
+    Otherwise it will register itself as CustomMapping handler.
+
+    This handler users `cuni` VerifyRule. If it does not exists for the guild, it's automatically created.
+    """
+
     name = "CUNI Verify"
 
     def __init__(self, bot: commands.Bot):
