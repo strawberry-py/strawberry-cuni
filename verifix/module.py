@@ -58,3 +58,7 @@ class Verifix(commands.Cog, MappingExtension):
             return rule
 
         return None
+
+
+async def setup(bot) -> None:
+    await bot.add_cog(Verifix(bot))
