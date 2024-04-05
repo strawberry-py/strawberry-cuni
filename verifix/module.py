@@ -51,11 +51,23 @@ class Verifix(commands.Cog, MappingExtension):
     async def map(
         self, guild_id: int, username: str = None, domain: str = None, email: str = None
     ) -> CustomMapping | None:
-        if domain.lower().endswith(".cuni.cz") or email.lower().endswith(".cuni.cz"):
+        if (domain and domain.lower().endswith(".cuni.cz")) or (
+            email and email.lower().endswith(".cuni.cz")
+        ):
             rule: VerifyRule = await self._get_or_create_rule(
                 guild_id=guild_id, name="cuni"
             )
-            return rule
+
+            domain = domain if domain else email.split("@")[-1]
+
+            mapping = CustomMapping(
+                guild_id=guild_id,
+                rule_id=rule.idx,
+                username=None,
+                domain=domain,
+                rule=rule,
+            )
+            return mapping
 
         return None
 
