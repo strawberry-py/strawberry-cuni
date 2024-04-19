@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from discord.ext import commands
+from discord.ext import commands, tasks
 
 from pie import logger
 
@@ -38,6 +38,25 @@ class Verifix(commands.Cog, MappingExtension):
             None, None, f"Unregistered {self.name} as CustomMapping handler."
         )
 
+        self.register.start()
+
+    @tasks.loop(seconds=2.0, count=1)
+    async def register(self):
+        if IMPORT_EX:
+            await bot_log.error(
+                None, None, "Error during mgmt.verify database import:", exception=IMPORT_EX
+            )
+            return
+
+        MappingExtension.register_extension(name=self.name, ext=self)
+        await bot_log.info(None, None, f"Registered {self.name} as CustomMapping handler.")
+
+    @register.before_loop
+    async def before_register(self):
+        """Ensures that bot is ready before registering
+        """
+        await self.bot.wait_until_ready()
+
     async def _get_or_create_rule(self, guild_id: int, name: str) -> VerifyRule:
         rule = VerifyRule.get(guild_id=guild_id, name=name)
 
@@ -73,15 +92,4 @@ class Verifix(commands.Cog, MappingExtension):
 
 
 async def setup(bot) -> None:
-    if IMPORT_EX:
-        await bot_log.error(
-            None, None, "Error during mgmt.verify database import:", exception=IMPORT_EX
-        )
-        return
-
-    cog = Verifix(bot)
-    await bot.add_cog(cog)
-
-    MappingExtension.register_extension(name=cog.name, ext=cog)
-
-    await bot_log.info(None, None, f"Registered {cog.name} as CustomMapping handler.")
+    await bot.add_cog(Verifix(bot))
