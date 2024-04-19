@@ -28,6 +28,7 @@ class Verifix(commands.Cog, MappingExtension):
 
     def __init__(self, bot: commands.Bot):
         self.bot = bot
+        self.register.start()
 
     async def cog_unload(self):
         if IMPORT_EX:
