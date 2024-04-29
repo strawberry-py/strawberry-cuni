@@ -45,17 +45,21 @@ class Verifix(commands.Cog, MappingExtension):
     async def register(self):
         if IMPORT_EX:
             await bot_log.error(
-                None, None, "Error during mgmt.verify database import:", exception=IMPORT_EX
+                None,
+                None,
+                "Error during mgmt.verify database import:",
+                exception=IMPORT_EX,
             )
             return
 
         MappingExtension.register_extension(name=self.name, ext=self)
-        await bot_log.info(None, None, f"Registered {self.name} as CustomMapping handler.")
+        await bot_log.info(
+            None, None, f"Registered {self.name} as CustomMapping handler."
+        )
 
     @register.before_loop
     async def before_register(self):
-        """Ensures that bot is ready before registering
-        """
+        """Ensures that bot is ready before registering"""
         await self.bot.wait_until_ready()
 
     async def _get_or_create_rule(self, guild_id: int, name: str) -> VerifyRule:
